@@ -1,3 +1,3 @@
 # NOSO TOOLCHAIN
 
-N-Tolchain - an application for interaction with the Noso blockchain
+N-Tolchain - application for interaction with the Noso blockchain
