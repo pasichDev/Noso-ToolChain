@@ -32,7 +32,7 @@ jobs:
       # Build the Go project for Linux
       - name: Build for Linux
         run: |
-          GOOS=linux GOARCH=amd64 go build -o cmd/nosotc-cli
+          GOOS=linux GOARCH=amd64 go build -o cmd/nosotc-cli/main.go
 
       # Upload the built binary as an artifact
       - name: Upload Artifact
