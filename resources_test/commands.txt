@@ -1,0 +1,1 @@
+ go run cmd/nosotc-cli/main.go sumary -f /home/pasich/repos/noso_toolchain/resources_test/sumary.psk -a N4ZR3fKhTUod34evnEcDQX3i6XufBDU
