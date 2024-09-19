@@ -37,8 +37,8 @@ func ParseSummaryData(bytesSummaryPsk []byte) ([]SummaryData, error) {
 
 		// Balance
 		balanceBytes := bytesSummaryPsk[index+82 : index+90]
-
 		sumData.Balance += noso.BytesToFloat64(balanceBytes)
+
 		addressSummary = append(addressSummary, sumData)
 		index += 106
 	}

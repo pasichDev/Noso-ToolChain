@@ -37,11 +37,11 @@ func (d *DecimalIntegerModel) SetDouble(value float64) {
 }
 
 // ConvertFromBigInt converts a large integer into the DecimalIntegerModel
-func ConvertFromBigInt(value uint64) (DecimalIntegerModel, error) {
+func ConvertFromBigInt(value int64) (DecimalIntegerModel, error) {
 	var returnData DecimalIntegerModel
 
 	// Перетворення uint64 на строку
-	stringValue := strconv.FormatUint(value, 10)
+	stringValue := strconv.FormatInt(value, 10)
 	length := len(stringValue)
 
 	// Якщо значення дорівнює 0
@@ -81,7 +81,7 @@ func BytesToFloat64(b []byte) float64 {
 	if len(b) != 8 {
 		return 0.0
 	}
-	bits := binary.LittleEndian.Uint64(b)
+	bits := int64(binary.LittleEndian.Uint64(b))
 	result, err := ConvertFromBigInt(bits)
 	if err != nil {
 		fmt.Println("Error:", err)
