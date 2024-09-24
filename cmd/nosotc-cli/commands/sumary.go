@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var summaryCmd = &cobra.Command{
@@ -23,8 +24,7 @@ var (
 
 func init() {
 	summaryCmd.Flags().StringVarP(&fileHash, "address", "a", "", "Displays the address balance according to the summary.psk file")
-	summaryCmd.PersistentFlags().BoolVarP(&richAddress, "richaddress", "r", false, "Display 100 richest addresses")
-	summaryCmd.PersistentFlags().BoolVarP(&exportTxt, "export", "e", false, "Export summary to TXT")
+	summaryCmd.PersistentFlags().BoolVarP(&richAddress, "rich-address", "r", false, "Display 100 richest addresses")
 	rootCmd.AddCommand(summaryCmd)
 }
 
@@ -35,18 +35,22 @@ func runSummary(cmd *cobra.Command, args []string) {
 
 	// Determine the file to process
 	if nosoDataFolder != "" {
-		fileSummary = filepath.Join(nosoDataFolder, "summary.psk")
+		fileSummary = filepath.Join(nosoDataFolder, "sumary.psk")
 	} else {
 		if nosoFilePath == "" {
-			fmt.Println("Error: Path to file is required (.psk).")
+			fmt.Printf(bold + "\n❌ You need to specify the path to the NOSODATA blockchain folder in the configuration. Otherwise, use the -f (--file) flag to specify the direct path to the block file \n" + reset)
 			os.Exit(1)
 		}
 		fileSummary = nosoFilePath
+		if !strings.HasSuffix(filepath.Base(fileSummary), ".psk") {
+			fmt.Println("❌ Error: Path to file must end with .psk.")
+			os.Exit(1)
+		}
 	}
 
 	summaryHolder, err := app.NewSummaryDataHolder(fileSummary)
 	if err != nil {
-		fmt.Println("Error initializing SummaryHandler:", err)
+		fmt.Println("❌ Error initializing SummaryHandler:", err)
 		return
 	}
 

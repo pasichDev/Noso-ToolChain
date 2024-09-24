@@ -44,7 +44,7 @@ func init() {
 	// Set up global flags
 	rootCmd.SetVersionTemplate(fmt.Sprintf("%s\n", ver.Title))
 	rootCmd.PersistentFlags().StringVarP(&nosoFilePath, "file", "f", "", "The path to the specified file you want to open (blk, summary, wallet, gvt).")
-
+	rootCmd.PersistentFlags().BoolVarP(&exportTxt, "export", "e", false, "Export selected data file to TXT file")
 	rootCmd.AddCommand(getDataFolderCmd)
 
 }
@@ -62,14 +62,15 @@ func initConfig() {
 	viper.SetConfigFile(cfgFile)
 
 	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("❌ Failed to read the configuration file: %v", err)
+		fmt.Println("❌ Failed to read the configuration file")
+		return
 	}
 
 	projectDir := viper.GetString("nosodata_path")
 	if _, err := os.Stat(projectDir); os.IsNotExist(err) {
 		if nosoFilePath == "" {
-			log.Printf("❌ The directory is invalid: %v", projectDir)
-			log.Printf("❌ To use nosotc-cli, set the blockchain data folder path in config.yaml or use the -f flag to specify a file to open (e.g., -f /path/to/file.psk). You can also set it using 'set-nosodata' command.")
+			fmt.Printf("❌ The directory is invalid: %v", projectDir)
+			fmt.Printf("❌ To use nosotc-cli, set the blockchain data folder path in config.yaml or use the -f flag to specify a file to open (e.g., -f /path/to/file.psk). You can also set it using 'set-nosodata' command.")
 
 			os.Exit(1)
 		}
