@@ -14,7 +14,7 @@ import (
 var (
 	blockCmd = &cobra.Command{
 		Use:   "block",
-		Short: ".blk file handler (blockchain blocks)",
+		Short: "Display the contents of blocks",
 		Run:   runBlock,
 	}
 	blkNumber   int

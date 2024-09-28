@@ -12,7 +12,7 @@ import (
 
 var summaryCmd = &cobra.Command{
 	Use:   "summary",
-	Short: "Handler for the Summary.psk file",
+	Short: "Display the contents of a summary file",
 	Run:   runSummary,
 }
 
