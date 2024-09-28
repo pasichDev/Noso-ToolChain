@@ -3,11 +3,12 @@ package app
 import (
 	"errors"
 	"fmt"
+	"github.com/Friends-Of-Noso/NosoData-Go/legacy"
+	"github.com/Friends-Of-Noso/NosoData-Go/utils"
 	"github.com/briandowns/spinner"
-	"github.com/pasichDev/nosotc/noso/models"
-	"github.com/pasichDev/nosotc/utils"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -20,7 +21,7 @@ type RichAddress struct {
 
 // SummaryDataHolder holds the summary data and provides methods to access it
 type SummaryDataHolder struct {
-	Summary []models.SummaryData
+	Summary legacy.LegacySummary
 }
 
 // NewSummaryDataHolder initializes the SummaryDataHolder with data from the specified file
@@ -33,70 +34,72 @@ func NewSummaryDataHolder(filePath string) (*SummaryDataHolder, error) {
 }
 
 // getSummary reads the summary data from a file
-func getSummary(filePath string) ([]models.SummaryData, error) {
-	bytesSummaryPsk, err := utils.ReadFile(filePath)
-	if err != nil {
-		return nil, errors.New("error reading file summary.psk")
-	}
+func getSummary(filePath string) (legacy.LegacySummary, error) {
 
-	summary, err := models.ParseSummaryData(bytesSummaryPsk)
+	summary := legacy.LegacySummary{}
+	err := summary.ReadFromFile(filePath)
 	if err != nil {
-		return nil, errors.New("error parsing file summary.psk")
+		return legacy.LegacySummary{}, errors.New("error reading file summary.psk")
 	}
 	return summary, nil
 }
 
-// GetSumaryResume calculates the total balance and number of items
-func (sdh *SummaryDataHolder) GetSumaryResume() ([2]int, error) {
-	var totalBalance float64
+// GetSummaryResume calculates the total balance and number of items
+func (sdh *SummaryDataHolder) GetSummaryResume() ([2]int, error) {
+	var totalBalance int64
 
-	for _, item := range sdh.Summary {
+	for _, item := range sdh.Summary.Accounts {
 		totalBalance += item.Balance
 	}
 
-	return [2]int{int(totalBalance), len(sdh.Summary)}, nil
+	num, err := strconv.Atoi(utils.ToNoso(totalBalance))
+	if err != nil {
+		return [2]int{}, err
+	}
+	return [2]int{num, len(sdh.Summary.Accounts)}, nil
 }
 
 // GetDetailHash displays details for a specific hash
-func (sdh *SummaryDataHolder) GetDetailHash(findHash string) (models.SummaryData, error) {
+func (sdh *SummaryDataHolder) GetDetailHash(findHash string) (legacy.LegacySummaryAccount, error) {
 
-	for _, v := range sdh.Summary {
-		if findHash != "" && v.Hash == findHash {
+	for _, v := range sdh.Summary.Accounts {
+		if findHash != "" && v.Hash.GetString() == findHash {
 			return v, nil
 		}
 	}
 
-	return models.SummaryData{}, fmt.Errorf("hash %s not found", findHash)
+	return legacy.LegacySummaryAccount{}, fmt.Errorf("hash %s not found", findHash)
 
 }
 
 // GetRichAddresses displays the richest addresses
-func (sdh *SummaryDataHolder) GetRichAddresses() ([]models.SummaryData, error) {
-	var result []models.SummaryData
+func (sdh *SummaryDataHolder) GetRichAddresses() ([]legacy.LegacySummaryAccount, error) {
+	var result []legacy.LegacySummaryAccount
 
-	if len(sdh.Summary) == 0 {
+	if len(sdh.Summary.Accounts) == 0 {
 		return result, errors.New("no rich addresses found")
 	}
 
-	sort.Slice(sdh.Summary, func(i, j int) bool {
-		return sdh.Summary[i].Balance > sdh.Summary[j].Balance
+	// Ось тут виправляємо сортування
+	sort.Slice(sdh.Summary.Accounts, func(i, j int) bool {
+		return sdh.Summary.Accounts[i].Balance > sdh.Summary.Accounts[j].Balance
 	})
 
 	limit := 100
-	if len(sdh.Summary) < 100 {
-		limit = len(sdh.Summary)
+	if len(sdh.Summary.Accounts) < 100 {
+		limit = len(sdh.Summary.Accounts)
 	}
 
 	for i := 0; i < limit; i++ {
-		result = append(result, sdh.Summary[i])
+		result = append(result, sdh.Summary.Accounts[i])
 	}
 
 	return result, nil
 }
 
-// ExportSumaryToTxt exports the summary data to a text file
-func (sdh *SummaryDataHolder) ExportSumaryToTxt(filePath string) error {
-	if len(sdh.Summary) == 0 {
+// ExportSummaryToTxt exports the summary data to a text file
+func (sdh *SummaryDataHolder) ExportSummaryToTxt(filePath string) error {
+	if len(sdh.Summary.Accounts) == 0 {
 		return errors.New("there is no data to export")
 	}
 
@@ -109,13 +112,13 @@ func (sdh *SummaryDataHolder) ExportSumaryToTxt(filePath string) error {
 
 	var sb strings.Builder
 
-	totalBalance := 0.0
+	var totalBalance int64
 
-	for _, v := range sdh.Summary {
-		sb.WriteString(fmt.Sprintf("  Hash: %s\n", v.Hash))
-		sb.WriteString(fmt.Sprintf("  Balance: %.8f\n", v.Balance))
-		if v.Custom != "" {
-			sb.WriteString(fmt.Sprintf("  Custom: %s\n", v.Custom))
+	for _, v := range sdh.Summary.Accounts {
+		sb.WriteString(fmt.Sprintf("  Hash: %s\n", v.Hash.GetString()))
+		sb.WriteString(fmt.Sprintf("  Balance: %s\n", utils.ToNoso(v.Balance)))
+		if v.Custom.GetString() != "" {
+			sb.WriteString(fmt.Sprintf("  Custom: %s\n", v.Custom.GetString()))
 		} else {
 			sb.WriteString("  Custom: nil\n") // Show nil if Custom is empty
 		}
@@ -124,8 +127,8 @@ func (sdh *SummaryDataHolder) ExportSumaryToTxt(filePath string) error {
 	}
 
 	// Summary footer
-	sb.WriteString(fmt.Sprintf("Total Addresses: %d\n", len(sdh.Summary)))
-	sb.WriteString(fmt.Sprintf("Total Balance: %.2f\n", totalBalance))
+	sb.WriteString(fmt.Sprintf("Total Addresses: %d\n", len(sdh.Summary.Accounts)))
+	sb.WriteString(fmt.Sprintf("Total Balance: %s\n", utils.ToNoso(totalBalance)))
 
 	timestamp := time.Now().Format("20060102_150405")
 	outputFilePath := fmt.Sprintf("%s/export_summary_%s.txt", filepathNew, timestamp)

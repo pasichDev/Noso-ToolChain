@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"github.com/Friends-Of-Noso/NosoData-Go/utils"
 	"github.com/olekukonko/tablewriter"
 	"github.com/pasichDev/nosotc/internal/app"
 	"github.com/spf13/cobra"
@@ -57,7 +58,7 @@ func runSummary(cmd *cobra.Command, args []string) {
 	switch {
 	case exportTxt:
 		fmt.Println("📄 Exporting summary to text file...")
-		if err := summaryHolder.ExportSumaryToTxt(fileSummary); err != nil {
+		if err := summaryHolder.ExportSummaryToTxt(fileSummary); err != nil {
 			fmt.Println("Error exporting summary:", err)
 		}
 
@@ -75,9 +76,9 @@ func runSummary(cmd *cobra.Command, args []string) {
 		for i := 0; i < 100 && i < len(listRich); i++ {
 			table.Append([]string{
 				fmt.Sprintf("%d", i+1),
-				listRich[i].Hash,
-				fmt.Sprintf("%.8f", listRich[i].Balance),
-				listRich[i].Custom,
+				listRich[i].Hash.GetString(),
+				fmt.Sprintf("%s", utils.ToNoso(listRich[i].Balance)),
+				listRich[i].Custom.GetString(),
 			})
 		}
 		table.Render()
@@ -89,15 +90,16 @@ func runSummary(cmd *cobra.Command, args []string) {
 			fmt.Println("Error fetching hash details:", err)
 			return
 		}
-		customValue := findHash.Custom
+		customValue := findHash.Custom.GetString()
 		if customValue == "" {
 			customValue = "null"
 		}
-		fmt.Printf(bold+"\n🔍 Hash: %s, 💰 Balance: %.8f, 🏷️ Custom: %s\n"+reset, findHash.Hash, findHash.Balance, customValue)
+
+		fmt.Printf(bold+"\n🔍 Hash: %s, 💰 Balance: %s, 🏷️ Custom: %s\n"+reset, findHash.Hash.GetString(), utils.ToNoso(findHash.Balance), customValue)
 
 	default:
 		fmt.Printf("📂 Processing file -> '%s'\n", fileSummary)
-		totalSummary, err := summaryHolder.GetSumaryResume()
+		totalSummary, err := summaryHolder.GetSummaryResume()
 		if err != nil {
 			fmt.Println("Error summarizing data:", err)
 			return
