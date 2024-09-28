@@ -95,21 +95,21 @@ func GetBlockDetail(filepath string, viewMode ViewModeBlock) {
 		}
 	}
 	if viewMode == OnlyRewards || viewMode == FullViewBlock {
+		if block.ProofOfStakeRewardCount > 0 {
+			color.Bold.Println("\n🌱 PoS Addresses:", block.ProofOfStakeRewardCount)
+			fmt.Println("💰 Amount:", utils.ToNoso(block.ProofOfStakeRewardAmount))
+			var n int32
+			for n = 0; n < block.ProofOfStakeRewardCount; n++ {
+				fmt.Printf("%s\n", block.ProofOfStakeRewardAddresses[n].GetString())
+			}
+		}
+
 		if block.MasterNodeRewardCount > 0 {
-			color.Bold.Println("\n🌱 PoS Addresses:", block.MasterNodeRewardCount)
+			color.Bold.Println("\n🌱 MN Addresses:", block.MasterNodeRewardCount)
 			fmt.Println("💰 Amount:", utils.ToNoso(block.MasterNodeRewardAmount))
 			var n int32
 			for n = 0; n < block.MasterNodeRewardCount; n++ {
 				fmt.Printf("%s\n", block.MasterNodeRewardAddresses[n].GetString())
-			}
-		}
-
-		if block.ProofOfStakeRewardCount > 0 {
-			color.Bold.Println("\n⚒️ PoW Addresses:", block.ProofOfStakeRewardCount)
-			fmt.Println("💰 Amount:", utils.ToNoso(block.MasterNodeRewardAmount))
-			var n int32
-			for n = 0; n < block.ProofOfStakeRewardCount; n++ {
-				fmt.Printf("%s\n", block.ProofOfStakeRewardAddresses[n].GetString())
 			}
 		}
 	}

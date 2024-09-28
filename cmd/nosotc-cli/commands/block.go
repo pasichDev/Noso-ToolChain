@@ -28,9 +28,9 @@ func init() {
 
 	blockCmd.Flags().IntVarP(&blkNumber, "target", "t", 0, "Selecting block (number) to view from the blockchain folder")
 	blockCmd.PersistentFlags().BoolVarP(&countBlocks, "count-blocks", "", false, "Print the number of blocks in the blockchain folder and the number of the last block")
-	blockCmd.PersistentFlags().BoolVarP(&fullInfo, "full-info", "", false, "Displaying full information about the block (PoS & PoW transactions and payments)")
+	blockCmd.PersistentFlags().BoolVarP(&fullInfo, "full-info", "", false, "Displaying full information about the block (PoS & MN transactions and payments)")
 	blockCmd.PersistentFlags().BoolVarP(&onlyOrders, "only-orders", "", false, "Displays only transactions")
-	blockCmd.PersistentFlags().BoolVarP(&onlyRewards, "only-rewards", "", false, "Displaying information only about PoS & PoW transactions and payments ")
+	blockCmd.PersistentFlags().BoolVarP(&onlyRewards, "only-rewards", "", false, "Displaying information only about PoS & MN transactions and payments ")
 
 	rootCmd.AddCommand(blockCmd)
 
